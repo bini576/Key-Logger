@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AES Encryption Playground | Biniyam Ademasu</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#070a12;color:#e2e8f0;min-height:100vh}
+:root{--cyan:#00d4ff;--green:#00ff88;--red:#ff3b3b;--amber:#f59e0b;--bg2:#0d1117;--bg3:#0f1923;--border:#1e3a5f;--muted:#64748b}
+
+/* Header */
+.header{background:linear-gradient(135deg,#0d1117,#0a1628);border-bottom:1px solid var(--border);padding:20px 32px;display:flex;align-items:center;justify-content:space-between}
+.header-logo{font-family:'Fira Code';font-size:1.1rem;color:var(--cyan);font-weight:700}
+.header-badge{background:rgba(0,255,136,.12);border:1px solid rgba(0,255,136,.4);color:var(--green);padding:4px 14px;border-radius:20px;font-size:.75rem;font-family:'Fira Code'}
+.header-links a{color:var(--muted);text-decoration:none;font-size:.85rem;margin-left:16px;transition:color .2s}
+.header-links a:hover{color:var(--cyan)}
+
+/* Layout */
+.container{max-width:1100px;margin:0 auto;padding:40px 24px}
+h1{font-size:1.9rem;font-weight:800;color:#fff;margin-bottom:6px}
+.subtitle{color:var(--muted);margin-bottom:36px;font-size:.95rem}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-bottom:28px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab-btn{padding:10px 22px;border:none;background:transparent;color:var(--muted);font-size:.9rem;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:'Inter'}
+.tab-btn.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+.tab-btn:hover:not(.active){color:#e2e8f0}
+.tab-pane{display:none}.tab-pane.active{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Cards */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:20px}
+.card-title{color:var(--cyan);font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+
+/* Form elements */
+label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+input[type=text],input[type=password],textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:#e2e8f0;font-family:'Fira Code';font-size:.88rem;resize:vertical;transition:border-color .2s}
+input[type=text]:focus,input[type=password]:focus,textarea:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,212,255,.08)}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:600px){.input-row{grid-template-columns:1fr}}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 24px;border-radius:8px;border:none;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .25s;font-family:'Inter'}
+.btn-primary{background:linear-gradient(135deg,var(--cyan),#0066ff);color:#000}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,212,255,.3)}
+.btn-green{background:linear-gradient(135deg,var(--green),#00a855);color:#000}
+.btn-green:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,255,136,.3)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-outline:hover{border-color:var(--cyan);color:var(--cyan)}
+.btn-sm{padding:7px 16px;font-size:.8rem}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+
+/* Output box */
+.output-box{background:#020510;border:1px solid var(--border);border-radius:8px;padding:16px;min-height:80px;font-family:'Fira Code';font-size:.82rem;color:#e2e8f0;word-break:break-all;position:relative;line-height:1.6}
+.output-box.encrypted{color:var(--amber);border-color:rgba(245,158,11,.3)}
+.output-box.decrypted{color:var(--green);border-color:rgba(0,255,136,.3)}
+.output-box.error{color:var(--red);border-color:rgba(255,59,59,.3)}
+.copy-btn{position:absolute;top:10px;right:10px;background:var(--bg2);border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:6px;font-size:.72rem;cursor:pointer;transition:all .2s}
+.copy-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* Result badge */
+.result-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:.8rem;font-weight:700;margin-bottom:12px}
+.badge-ok{background:rgba(0,255,136,.12);border:1px solid rgba(0,255,136,.4);color:var(--green)}
+.badge-err{background:rgba(255,59,59,.12);border:1px solid rgba(255,59,59,.4);color:var(--red)}
+
+/* Step explainer */
+.steps-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:4px}
+.step-box{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;transition:all .3s}
+.step-box:hover{border-color:var(--cyan);transform:translateY(-2px)}
+.step-num{font-size:1.6rem;margin-bottom:8px}
+.step-title{color:var(--cyan);font-size:.8rem;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.step-desc{color:var(--muted);font-size:.77rem;line-height:1.5}
+.arrow{color:var(--border);font-size:1.2rem;display:flex;align-items:center;justify-content:center;padding:8px 0}
+
+/* Log sim */
+.log-container{background:#020510;border:1px solid var(--border);border-radius:8px;padding:16px;font-family:'Fira Code';font-size:.8rem;max-height:300px;overflow-y:auto}
+.log-line{padding:3px 0;border-bottom:1px solid rgba(30,58,95,.4)}
+.log-line:last-child{border:none}
+.log-ts{color:var(--muted);margin-right:10px}
+.log-plain{color:#94a3b8}
+.log-enc{color:var(--amber);word-break:break-all}
+
+/* Info boxes */
+.info-box{background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.2);border-radius:10px;padding:16px 20px;margin-bottom:16px;font-size:.88rem;color:#94a3b8;line-height:1.7}
+.info-box strong{color:var(--cyan)}
+.warn-box{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:.85rem;color:#94a3b8;line-height:1.6}
+.warn-box i{color:var(--amber);margin-right:6px}
+
+/* Stats grid */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.stat-val{font-size:1.4rem;font-weight:800;color:var(--cyan);font-family:'Fira Code'}
+.stat-lbl{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+
+/* About */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:600px){.about-grid{grid-template-columns:1fr}}
+.about-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:18px}
+.about-card h3{color:var(--cyan);font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.about-card p{color:var(--muted);font-size:.82rem;line-height:1.6}
+.about-card code{background:rgba(0,212,255,.1);color:var(--cyan);padding:1px 6px;border-radius:4px;font-size:.8rem}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-logo">🔑 AES Encryption Playground</span>
+  <span class="header-badge">● LIVE DEMO</span>
+  <div class="header-links">
+    <a href="https://github.com/bini576/Key-Logger" target="_blank"><i class="fab fa-github"></i> Source</a>
+    <a href="https://bini576.github.io" target="_blank"><i class="fas fa-globe"></i> Portfolio</a>
+  </div>
+</div>
+
+<div class="container">
+  <h1>🔑 AES Encryption Playground</h1>
+  <p class="subtitle">Interactive demo of AES-256-CBC encryption — based on the Key Logger project by <strong style="color:var(--cyan)">Biniyam Ademasu Afework</strong></p>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="openTab('encrypt')">🔒 Encrypt</button>
+    <button class="tab-btn" onclick="openTab('decrypt')">🔓 Decrypt</button>
+    <button class="tab-btn" onclick="openTab('logger-sim')">📋 Logger Simulation</button>
+    <button class="tab-btn" onclick="openTab('how-it-works')">📚 How AES Works</button>
+    <button class="tab-btn" onclick="openTab('about')">👨‍💻 About</button>
+  </div>
+
+  <!-- ══ ENCRYPT TAB ══ -->
+  <div id="tab-encrypt" class="tab-pane active">
+    <div class="warn-box">
+      <i class="fas fa-exclamation-triangle"></i>
+      <strong style="color:var(--amber)">Educational Demo:</strong>
+      This is a client-side simulation. All operations happen in your browser — nothing is sent to any server.
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="fas fa-lock"></i> Encrypt Text with AES-256-CBC</div>
+
+      <div class="input-row">
+        <div>
+          <label>Plaintext Message</label>
+          <textarea id="enc-plaintext" rows="4" placeholder="Type any message to encrypt...&#10;e.g. username=john&password=secret123"></textarea>
+        </div>
+        <div>
+          <label>Encryption Key (16, 24, or 32 chars for AES-128/192/256)</label>
+          <input type="text" id="enc-key" value="PasswordPassword" maxlength="32" placeholder="Enter encryption key (16-32 chars)"/>
+          <div style="margin-top:8px">
+            <label style="margin-bottom:4px">Key Length</label>
+            <div id="key-strength-bar" style="height:6px;border-radius:3px;background:var(--border);overflow:hidden;margin-top:4px"><div id="key-strength-fill" style="height:100%;background:var(--green);transition:width .3s;width:100%"></div></div>
+            <div id="key-strength-label" style="font-size:.75rem;color:var(--green);margin-top:4px;font-family:'Fira Code'">AES-128 (16 chars) ✓</div>
+          </div>
+          <div class="btn-row" style="margin-top:12px">
+            <button class="btn btn-outline btn-sm" onclick="genKey(16)">Generate 128-bit</button>
+            <button class="btn btn-outline btn-sm" onclick="genKey(24)">Generate 192-bit</button>
+            <button class="btn btn-outline btn-sm" onclick="genKey(32)">Generate 256-bit</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="doEncrypt()"><i class="fas fa-lock"></i> Encrypt Now</button>
+
+      <div style="margin-top:20px" id="enc-result" class="hidden">
+        <div class="result-badge badge-ok" id="enc-badge"><i class="fas fa-check-circle"></i> Encrypted Successfully</div>
+        <label style="margin-top:8px">Encrypted Output (Base64 encoded — IV + Ciphertext)</label>
+        <div class="output-box encrypted" id="enc-output">
+          <button class="copy-btn" onclick="copyText('enc-output')"><i class="fas fa-copy"></i> Copy</button>
+          <span id="enc-output-text"></span>
+        </div>
+        <div class="stats-row" style="margin-top:14px">
+          <div class="stat-card"><div class="stat-val" id="stat-plain-len">0</div><div class="stat-lbl">Plaintext Bytes</div></div>
+          <div class="stat-card"><div class="stat-val" id="stat-enc-len">0</div><div class="stat-lbl">Encrypted Bytes</div></div>
+          <div class="stat-card"><div class="stat-val" id="stat-iv">CBC</div><div class="stat-lbl">Mode</div></div>
+          <div class="stat-card"><div class="stat-val" id="stat-keybits">128</div><div class="stat-lbl">Key Bits</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DECRYPT TAB ══ -->
+  <div id="tab-decrypt" class="tab-pane">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-unlock"></i> Decrypt AES-256-CBC Ciphertext</div>
+
+      <label>Encrypted Text (Base64 — IV + Ciphertext)</label>
+      <textarea id="dec-ciphertext" rows="4" style="margin-bottom:14px" placeholder="Paste the encrypted Base64 string here..."></textarea>
+
+      <label>Decryption Key</label>
+      <input type="text" id="dec-key" value="PasswordPassword" placeholder="Must match the key used to encrypt" style="margin-bottom:14px"/>
+
+      <button class="btn btn-green" onclick="doDecrypt()"><i class="fas fa-unlock"></i> Decrypt</button>
+
+      <div style="margin-top:20px" id="dec-result">
+        <label>Decrypted Output</label>
+        <div class="output-box" id="dec-output" style="color:var(--muted);font-style:italic">Paste ciphertext above and click Decrypt...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LOGGER SIM TAB ══ -->
+  <div id="tab-logger-sim" class="tab-pane">
+    <div class="warn-box">
+      <i class="fas fa-shield-alt"></i>
+      <strong style="color:var(--amber)">Ethical & Educational Only:</strong>
+      This simulation shows how the keylogger project works for awareness purposes. The original project was built to demonstrate how attackers encrypt stolen keystrokes to evade detection — and how to defend against it.
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="fas fa-keyboard"></i> Keylogger Simulation — Type to See Encryption in Action</div>
+      <p style="color:var(--muted);font-size:.88rem;margin-bottom:16px">Type in the box below. Watch how each keystroke is instantly encrypted with AES before being "logged" — just like the real project.</p>
+
+      <label>Simulation Input (type here)</label>
+      <input type="text" id="sim-input" placeholder="Start typing... watch the log update in real-time" oninput="simKeystroke(event)" autocomplete="off"/>
+
+      <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <label style="margin:0">Encrypted Log (AES-CBC, Base64)</label>
+        <button class="btn btn-outline btn-sm" onclick="clearLog()"><i class="fas fa-trash"></i> Clear</button>
+      </div>
+      <div class="log-container" id="sim-log">
+        <div style="color:var(--muted);font-style:italic;font-size:.8rem">Log is empty — start typing above...</div>
+      </div>
+
+      <div style="margin-top:16px">
+        <label>Decrypt Log (enter key to reveal)</label>
+        <div style="display:flex;gap:10px">
+          <input type="password" id="decrypt-log-key" value="PasswordPassword" placeholder="Enter key to decrypt log..."/>
+          <button class="btn btn-green" style="white-space:nowrap" onclick="decryptLog()"><i class="fas fa-eye"></i> Reveal</button>
+        </div>
+        <div class="output-box decrypted" style="margin-top:12px" id="decrypted-log">Decrypted keystrokes will appear here...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ HOW IT WORKS TAB ══ -->
+  <div id="tab-how-it-works" class="tab-pane">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-cogs"></i> How AES-CBC Works</div>
+      <div class="info-box">
+        <strong>AES (Advanced Encryption Standard)</strong> is a symmetric block cipher that encrypts data in 128-bit blocks.
+        In <strong>CBC (Cipher Block Chaining)</strong> mode, each block is XORed with the previous ciphertext block before encryption,
+        making identical plaintexts produce different ciphertexts. A random <strong>IV (Initialization Vector)</strong> ensures
+        different output even for the same input and key.
+      </div>
+
+      <div class="steps-wrap">
+        <div class="step-box">
+          <div class="step-num">📝</div>
+          <div class="step-title">1. Plaintext</div>
+          <div class="step-desc">Original message, padded to 16-byte block boundary (PKCS#7)</div>
+        </div>
+        <div class="step-box">
+          <div class="step-num">🎲</div>
+          <div class="step-title">2. Random IV</div>
+          <div class="step-desc">16-byte random Initialization Vector generated per encryption</div>
+        </div>
+        <div class="step-box">
+          <div class="step-num">⊕</div>
+          <div class="step-title">3. XOR Block</div>
+          <div class="step-desc">First block XORed with IV; subsequent blocks with previous ciphertext</div>
+        </div>
+        <div class="step-box">
+          <div class="step-num">🔐</div>
+          <div class="step-title">4. AES Encrypt</div>
+          <div class="step-desc">Each XORed block encrypted with the secret key (10/12/14 rounds)</div>
+        </div>
+        <div class="step-box">
+          <div class="step-num">📦</div>
+          <div class="step-title">5. Base64 Output</div>
+          <div class="step-desc">IV + ciphertext concatenated, encoded as Base64 for safe storage</div>
+        </div>
+      </div>
+
+      <div style="margin-top:28px">
+        <div class="card-title"><i class="fas fa-table"></i> AES Key Sizes</div>
+        <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+          <thead><tr style="color:var(--cyan)">
+            <th style="padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)">Variant</th>
+            <th style="padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)">Key Length</th>
+            <th style="padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)">Rounds</th>
+            <th style="padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)">Security</th>
+            <th style="padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)">Common Use</th>
+          </tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:10px 12px;color:var(--amber)">AES-128</td>
+              <td style="padding:10px 12px;font-family:'Fira Code'">16 bytes / 128 bits</td>
+              <td style="padding:10px 12px">10</td>
+              <td style="padding:10px 12px;color:var(--green)">Strong</td>
+              <td style="padding:10px 12px;color:var(--muted)">Most web apps, TLS</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:10px 12px;color:var(--cyan)">AES-192</td>
+              <td style="padding:10px 12px;font-family:'Fira Code'">24 bytes / 192 bits</td>
+              <td style="padding:10px 12px">12</td>
+              <td style="padding:10px 12px;color:var(--green)">Very Strong</td>
+              <td style="padding:10px 12px;color:var(--muted)">Government classified</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 12px;color:var(--green)">AES-256</td>
+              <td style="padding:10px 12px;font-family:'Fira Code'">32 bytes / 256 bits</td>
+              <td style="padding:10px 12px">14</td>
+              <td style="padding:10px 12px;color:var(--green)">Maximum</td>
+              <td style="padding:10px 12px;color:var(--muted)">TOP SECRET, banking, military</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ABOUT TAB ══ -->
+  <div id="tab-about" class="tab-pane">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-user-shield"></i> About This Project</div>
+      <div class="info-box">
+        The <strong>Key Logger with AES Encryption</strong> is a Python-based educational cybersecurity project
+        demonstrating how malware can capture and encrypt keystrokes to evade detection.
+        The original project uses <code>pynput</code> to intercept keyboard events and <code>PyCryptodome</code>
+        to encrypt each keystroke using AES-CBC before writing to a log file.
+        A companion decryptor (tkinter GUI) allows authorized recovery using the correct password.
+      </div>
+      <div class="about-grid">
+        <div class="about-card">
+          <h3>🔑 Original Project</h3>
+          <p><code>main.py</code> — Runs in background, intercepts keystrokes via <code>pynput.Listener</code>, encrypts each with AES-CBC using key <code>PasswordPassword</code>, appends Base64 ciphertext to <code>log.txt</code>.</p>
+        </div>
+        <div class="about-card">
+          <h3>🔓 Decryptor</h3>
+          <p><code>logdecryptor.py</code> — tkinter GUI that prompts for password, reads <code>log.txt</code>, decodes Base64, splits IV from ciphertext, decrypts each line with AES-CBC, writes plaintext to <code>decrypted_text.txt</code>.</p>
+        </div>
+        <div class="about-card">
+          <h3>📚 Skills Demonstrated</h3>
+          <p>Symmetric encryption (AES-CBC), PKCS#7 padding, IV generation, Base64 encoding, keyboard event interception, GUI programming (tkinter), Python cryptography (<code>PyCryptodome</code>).</p>
+        </div>
+        <div class="about-card">
+          <h3>⚠️ Ethics & Defense</h3>
+          <p>Understanding how keyloggers work is essential for defense. Defenders use this knowledge to build behavioral detection rules, endpoint monitoring, and educate users about malware threats.</p>
+        </div>
+      </div>
+      <div style="margin-top:20px;text-align:center">
+        <a href="https://github.com/bini576/Key-Logger" target="_blank" class="btn btn-primary"><i class="fab fa-github"></i> View Source on GitHub</a>
+        <a href="https://bini576.github.io" target="_blank" class="btn btn-outline" style="margin-left:10px"><i class="fas fa-globe"></i> Portfolio</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Tab switching ──
+function openTab(name) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── Key strength indicator ──
+document.getElementById('enc-key').addEventListener('input', function() {
+  const len = this.value.length;
+  const fill = document.getElementById('key-strength-fill');
+  const label = document.getElementById('key-strength-label');
+  if (len >= 32) { fill.style.width='100%'; fill.style.background='#00ff88'; label.textContent='AES-256 (32 chars) ✓'; label.style.color='#00ff88'; }
+  else if (len >= 24) { fill.style.width='75%'; fill.style.background='#00d4ff'; label.textContent='AES-192 (24 chars) ✓'; label.style.color='#00d4ff'; }
+  else if (len >= 16) { fill.style.width='50%'; fill.style.background='#f59e0b'; label.textContent='AES-128 (16 chars) ✓'; label.style.color='#f59e0b'; }
+  else { fill.style.width=(len/16*50)+'%'; fill.style.background='#ff3b3b'; label.textContent=`Too short (need ${16-len} more chars)`; label.style.color='#ff3b3b'; }
+});
+
+// ── Generate key ──
+function genKey(len) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  let key = '';
+  const arr = new Uint8Array(len);
+  crypto.getRandomValues(arr);
+  arr.forEach(b => key += chars[b % chars.length]);
+  document.getElementById('enc-key').value = key;
+  document.getElementById('enc-key').dispatchEvent(new Event('input'));
+}
+
+// ── AES Encrypt (Web Crypto API) ──
+async function aesEncrypt(plaintext, keyStr) {
+  const enc = new TextEncoder();
+  const keyData = padKey(keyStr);
+  const cryptoKey = await crypto.subtle.importKey('raw', keyData, {name:'AES-CBC'}, false, ['encrypt']);
+  const iv = crypto.getRandomValues(new Uint8Array(16));
+  const ct = await crypto.subtle.encrypt({name:'AES-CBC', iv}, cryptoKey, enc.encode(plaintext));
+  const combined = new Uint8Array(16 + ct.byteLength);
+  combined.set(iv); combined.set(new Uint8Array(ct), 16);
+  return btoa(String.fromCharCode(...combined));
+}
+
+async function aesDecrypt(b64, keyStr) {
+  const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const iv = bytes.slice(0,16); const ct = bytes.slice(16);
+  const keyData = padKey(keyStr);
+  const cryptoKey = await crypto.subtle.importKey('raw', keyData, {name:'AES-CBC'}, false, ['decrypt']);
+  const pt = await crypto.subtle.decrypt({name:'AES-CBC', iv}, cryptoKey, ct);
+  return new TextDecoder().decode(pt);
+}
+
+function padKey(keyStr) {
+  const enc = new TextEncoder();
+  const raw = enc.encode(keyStr);
+  let len = raw.length <= 16 ? 16 : raw.length <= 24 ? 24 : 32;
+  const out = new Uint8Array(len);
+  out.set(raw.slice(0, len));
+  return out;
+}
+
+// ── Encrypt button ──
+async function doEncrypt() {
+  const pt = document.getElementById('enc-plaintext').value;
+  const key = document.getElementById('enc-key').value;
+  if (!pt) { alert('Enter some text to encrypt'); return; }
+  if (key.length < 16) { alert('Key must be at least 16 characters'); return; }
+  try {
+    const enc = await aesEncrypt(pt, key);
+    document.getElementById('enc-output-text').textContent = enc;
+    document.getElementById('enc-result').classList.remove('hidden');
+    document.getElementById('stat-plain-len').textContent = new TextEncoder().encode(pt).length;
+    document.getElementById('stat-enc-len').textContent = atob(enc).length;
+    document.getElementById('stat-keybits').textContent = key.length <= 16 ? '128' : key.length <= 24 ? '192' : '256';
+    // Auto-fill decrypt tab
+    document.getElementById('dec-ciphertext').value = enc;
+    document.getElementById('dec-key').value = key;
+  } catch(e) {
+    document.getElementById('enc-output-text').textContent = 'Error: ' + e.message;
+    document.getElementById('enc-output').className = 'output-box error';
+  }
+}
+
+// ── Decrypt button ──
+async function doDecrypt() {
+  const ct = document.getElementById('dec-ciphertext').value.trim();
+  const key = document.getElementById('dec-key').value;
+  const out = document.getElementById('dec-output');
+  if (!ct) { out.textContent = 'Enter ciphertext above'; out.className='output-box'; return; }
+  try {
+    const pt = await aesDecrypt(ct, key);
+    out.textContent = pt;
+    out.className = 'output-box decrypted';
+  } catch(e) {
+    out.textContent = '❌ Decryption failed — wrong key or corrupted data\n' + e.message;
+    out.className = 'output-box error';
+  }
+}
+
+// ── Logger simulation ──
+const simLog = [];
+async function simKeystroke(evt) {
+  const char = evt.target.value.slice(-1);
+  if (!char) return;
+  const enc = await aesEncrypt(char, 'PasswordPassword');
+  const ts = new Date().toLocaleTimeString();
+  simLog.push({ts, char, enc});
+  const logEl = document.getElementById('sim-log');
+  if (simLog.length === 1) logEl.innerHTML = '';
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  line.innerHTML = `<span class="log-ts">[${ts}]</span><span class="log-enc">${enc}</span>`;
+  logEl.appendChild(line);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+async function decryptLog() {
+  const key = document.getElementById('decrypt-log-key').value;
+  const out = document.getElementById('decrypted-log');
+  if (!simLog.length) { out.textContent = 'No log entries yet — type something above first!'; return; }
+  let result = '';
+  for (const entry of simLog) {
+    try { result += await aesDecrypt(entry.enc, key); }
+    catch { result += '?'; }
+  }
+  out.textContent = result || '(empty)';
+}
+
+function clearLog() {
+  simLog.length = 0;
+  document.getElementById('sim-log').innerHTML = '<div style="color:var(--muted);font-style:italic;font-size:.8rem">Log cleared...</div>';
+  document.getElementById('sim-input').value = '';
+  document.getElementById('decrypted-log').textContent = 'Decrypted keystrokes will appear here...';
+}
+
+function copyText(id) {
+  const text = document.getElementById(id + '-text')?.textContent || document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text);
+  event.target.textContent = '✓ Copied!';
+  setTimeout(() => event.target.innerHTML = '<i class="fas fa-copy"></i> Copy', 1500);
+}
+</script>
+</body>
+</html>
