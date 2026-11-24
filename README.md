@@ -1,6 +1,6 @@
 <div align="center">
 
-# âŒ¨ï¸ Educational Keylogger with AES-256 Encryption
+# ⌨️ Educational Keylogger with AES-256 Encryption
 ### Defensive Telemetry Logging, Keystroke Capture Analysis & Symmetric Cryptographic Storage
 
 [![Python 3](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
@@ -13,13 +13,13 @@
 ---
 
 > [!CAUTION]
-> ### ðŸ›‘ STRICT ETHICS & LEGAL WARNING
+> ### 🛑 STRICT ETHICS & LEGAL WARNING
 > **FOR CONTROLLED LAB TESTING & EDUCATIONAL RESEARCH ONLY.**  
 > Keylogging software without the explicit, documented consent of the device owner constitutes a serious criminal offense under cyber crime statutes globally. This software is engineered solely to study input interception mechanisms from an Endpoint Detection and Response (EDR) perspective and to illustrate the cryptographic protection of telemetry logs in transit and at rest.
 
 ---
 
-## ðŸ“Œ Project Overview
+## 📌 Project Overview
 
 In cybersecurity, understanding the mechanics of keystroke logging is essential for engineering effective endpoint defenses, behavior-based heuristics, and anti-malware telemetry.
 
@@ -27,7 +27,7 @@ This project implements an **educational input capture utility** written in **Py
 
 ---
 
-## âœ¨ Features
+## ✨ Features
 
 - **Asynchronous Hook Interception:** Utilizes platform event listeners (`pynput` / `keyboard`) to track and buffer low-level keypress and release events without freezing the main process thread.
 - **Strong AES-256 Cryptography:**
@@ -40,21 +40,21 @@ This project implements an **educational input capture utility** written in **Py
 
 ---
 
-## ðŸ” How the AES Encryption Works
+## 🔐 How the AES Encryption Works
 
 ```
 [ Keystroke Event Stream ]
-           â”‚
-           â–¼
+           │
+           ▼
  [ In-Memory Text Buffer ]
-           â”‚
-           â–¼ (Apply PKCS#7 Padding)
-  [ 128-bit Block Slices ] â”€â”€â”€â–º [ Secret Key (256-bit) ] + [ Random 16-byte IV ]
-                                           â”‚
-                                           â–¼
+           │
+           ▼ (Apply PKCS#7 Padding)
+  [ 128-bit Block Slices ] ───► [ Secret Key (256-bit) ] + [ Random 16-byte IV ]
+                                           │
+                                           ▼
                                 [ AES Engine (CBC Mode) ]
-                                           â”‚
-                                           â–¼
+                                           │
+                                           ▼
                                [ Encrypted Log (.bin / .enc) ]
 ```
 
@@ -64,7 +64,7 @@ This project implements an **educational input capture utility** written in **Py
 
 ---
 
-## ðŸš€ Installation & Lab Setup
+## 🚀 Installation & Lab Setup
 
 ### Prerequisites
 - Python 3.8+
@@ -95,7 +95,7 @@ pip install -r requirements.txt
 
 ---
 
-## ðŸ› ï¸ Usage (Lab Demonstration)
+## 🛠️ Usage (Lab Demonstration)
 
 > [!NOTE]
 > Execute these commands only on your own local development machine or dedicated sandbox VM.
@@ -124,7 +124,7 @@ The sanitized plaintext log will be reconstituted for forensic review.
 
 ---
 
-## ðŸ›¡ï¸ Detection & Defensive Mitigations
+## 🛡️ Detection & Defensive Mitigations
 
 How security teams and EDR agents defend against keystroke interception:
 
@@ -135,13 +135,13 @@ How security teams and EDR agents defend against keystroke interception:
 
 ---
 
-## âš–ï¸ Disclaimer
+## ⚖️ Disclaimer
 
 This software is strictly intended for educational demonstrations of cryptography, input subsystem APIs, and cybersecurity defense. Neither the author nor Bahir Dar University assumes any responsibility for misuse, illegal activity, or damage caused by this software.
 
 ---
 
-## ðŸ“„ License & Author
+## 📄 License & Author
 
 Distributed under the **MIT License**.
 
